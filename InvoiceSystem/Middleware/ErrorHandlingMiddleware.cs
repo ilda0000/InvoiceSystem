@@ -6,25 +6,28 @@ using Microsoft.AspNetCore.Mvc;
 
 public class ErrorHandlingMiddleware
 {
-    private readonly RequestDelegate _next;
+    private readonly RequestDelegate _next; // reference to the next middleware in the pipeline 
     private readonly ILogger<ErrorHandlingMiddleware> _logger;
 
-    public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
+    public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger) //constructor to initialize the middleware with the next delegate and logger
     {
         _next = next;
         _logger = logger;
     }
 
-    public async Task Invoke(HttpContext context)
+    public async Task Invoke(HttpContext context) //main method called for every http request
     {
         try
         {
-            await _next(context);
+            await _next(context); //call the next middleware in the pipeline
         }
-        catch (ValidationException ex)
+        catch (ValidationException ex) // catch validation exceptions from FluentValidation 
         {
-            _logger.LogWarning(ex, "Validation failed");
-            await WriteProblem(context, StatusCodes.Status400BadRequest, "Validation error", ex.Message);
+            _logger.LogWarning(ex, "Validation failed"); //log the validation as a warning 
+            await WriteProblem(context,
+                StatusCodes.Status400BadRequest, //httpcode 400 for bad request
+                "Validation error", ex.Message);
+
         }
         catch (Exception ex)
         {
