@@ -17,8 +17,8 @@ namespace InvoiceSystem.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var createdCustomer = await _service.AddCustomerAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = createdCustomer.Id }, createdCustomer);
+            var created = await _service.AddCustomerAsync(dto);
+            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
 
         [HttpGet("{id}")]

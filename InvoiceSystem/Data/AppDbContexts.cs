@@ -23,6 +23,14 @@ namespace InvoiceSystem.Data
                 .Property(c => c.Id)
                 .UseIdentityColumn();
 
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => c.Email)
+                .IsUnique();
+
             modelBuilder.Entity<Plan>()
                 .Property(p => p.Id)
                 .UseIdentityColumn();

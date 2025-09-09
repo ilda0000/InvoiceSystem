@@ -14,7 +14,11 @@ namespace InvoiceSystem.Models.Entity
 
         // New relationship
         public int PaymentMethodId { get; set; }
+
         public PaymentMethod PaymentMethod { get; set; } = null!;
+
+        
+
     }
 
 }

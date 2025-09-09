@@ -25,7 +25,7 @@ namespace InvoiceSystem.Repositories
             // Get the best discount where MinMonthsRequired <= months
             return await _context.Discounts
                 .Where(d => d.MinMonthsRequired <= months)
-                .OrderByDescending(d => d.Value)
+                .OrderByDescending(d => d.Value) 
                 .FirstOrDefaultAsync();
         }
 
@@ -33,6 +33,11 @@ namespace InvoiceSystem.Repositories
         {
             return await _context.Discounts
                 .FirstOrDefaultAsync(d => d.MinMonthsRequired == 0 && d.Name == name);
+        }
+        public async Task AddAsync(Discount discount)
+        {
+            await _context.Discounts.AddAsync(discount);
+            await _context.SaveChangesAsync();
         }
     }
 }

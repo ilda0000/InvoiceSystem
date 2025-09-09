@@ -4,6 +4,7 @@ namespace InvoiceSystem.Service
 {
     public interface IPlanService
     {
-        Task<List<PlanDTO>> GetAllPlansAsync(); // symbol of money 
-    }
+        Task<List<PlanDTO>> GetAllPlansAsync();
+        Task<PlanDTO> GetByNameAsync(string name);
+    }   
 }

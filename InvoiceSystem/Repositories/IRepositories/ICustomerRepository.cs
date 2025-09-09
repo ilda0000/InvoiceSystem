@@ -6,6 +6,10 @@ namespace InvoiceSystem.Repositories
     {
         Task AddAsync(Customer customer);
         Task<Customer?> GetByIdAsync(int id);
-        Task<IEnumerable<Customer>> GetAllAsync();  
+        Task<IEnumerable<Customer>> GetAllAsync();
+        // ICustomerRepository.cs
+        Task<(bool NameTaken, bool EmailTaken)> WhichExistAsync(string name, string email);
+
+
     }
 }

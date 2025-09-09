@@ -17,7 +17,7 @@ namespace InvoiceSystem.Service
             _mapper = mapper;
             _logger = logger;
         }
-
+      
         public async Task<List<PlanDTO>> GetAllPlansAsync()
         {
             _logger.LogInformation("Fetching all subscription plans...");
@@ -29,6 +29,11 @@ namespace InvoiceSystem.Service
             }
 
             return _mapper.Map<List<PlanDTO>>(plans);
+        }
+
+        public Task<PlanDTO> GetByNameAsync(string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }

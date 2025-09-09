@@ -15,5 +15,18 @@ namespace InvoiceSystem.Repositories
         {
             return await _context.Customers.ToListAsync();
         }
+       
+        public async Task<(bool NameTaken, bool EmailTaken)> WhichExistAsync(string name, string email)
+        {
+            var hits = await _context.Customers
+                .Where(c => c.Name == name || c.Email == email)
+                .Select(c => new { c.Name, c.Email })
+                .ToListAsync();
+
+            var nameTaken = hits.Any(h => h.Name == name);
+            var emailTaken = hits.Any(h => h.Email == email);
+            return (nameTaken, emailTaken);
+        }
+
     }
 }

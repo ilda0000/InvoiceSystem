@@ -34,7 +34,7 @@ namespace InvoiceSystem.Service
         public async Task<InvoiceDTO?> GenerateMonthlyInvoicesMinimalAsync()
         {
             var activeSubs = await _unitOfWork.Subscriptions.GetAllActiveAsync();
-            var billingDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            var billingDate = DateTime.UtcNow;
 
             foreach (var sub in activeSubs)
             {

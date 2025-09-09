@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using InvoiceSystem.Data;
 using InvoiceSystem.Mapper;
 using InvoiceSystem.Models.Validators;
 using InvoiceSystem.Repositories;
 using InvoiceSystem.Repositories.IRepositories;
+using InvoiceSystem.Service;
 using InvoiceSystem.Service;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -21,9 +23,10 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 // Add services to the container.
-builder.Services.AddControllers();
 builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CustomerValidator>());  
+    .ConfigureApiBehaviorOptions(o => o.SuppressModelStateInvalidFilter = true); // let middleware handle validation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CustomerValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,7 +34,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.EnableAnnotations();
 });
-
 
 // Database Context Configuration    
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -53,6 +55,7 @@ builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
 
 // UnitOfWork and Services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IPlanService, PlanService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
@@ -62,7 +65,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
-// ✅ Logo automatikisht çdo request HTTP
+//log automatically every HTTP request  
 app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
@@ -73,6 +76,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseAuthorization();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.MapControllers();
+
 app.Run();

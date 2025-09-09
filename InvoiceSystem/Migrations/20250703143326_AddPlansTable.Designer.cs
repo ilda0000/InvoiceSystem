@@ -159,7 +159,9 @@ namespace InvoiceSystem.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("MaxUsers")
+                      // FIX: Replace invalid property definition with a valid property name
+                    // Example: If you meant to add a property like "DurationMonths", define it as below:
+                    b.Property<int>("DurationMonths")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")

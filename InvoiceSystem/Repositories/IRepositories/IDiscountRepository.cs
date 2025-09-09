@@ -8,6 +8,6 @@ namespace InvoiceSystem.Repositories
         Task<Discount> GetBestApplicableDiscountAsync(int months);
         Task<List<Discount>> GetAllAsync();
         Task<Discount?> GetByNameAsync(string name);
-
+        Task AddAsync(Discount discount);
     }
 }
