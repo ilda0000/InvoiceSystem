@@ -1,6 +1,8 @@
 ﻿using InvoiceSystem.Models.DTO;
+using InvoiceSystem.Models.Validators;
 using InvoiceSystem.Service;
 using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
 
 namespace InvoiceSystem.Controllers
 {
@@ -9,11 +11,14 @@ namespace InvoiceSystem.Controllers
     public class SubscriptionController : ControllerBase
     {
         private readonly ISubscriptionService _subscriptionService;
+        private readonly IValidator<SubscriptionDTO> _validator;
 
-        public SubscriptionController(ISubscriptionService subscriptionService)
+        public SubscriptionController(ISubscriptionService subscriptionService, IValidator<SubscriptionDTO> validator)
         {
             _subscriptionService = subscriptionService;
+            _validator = validator;
         }
+
         [HttpPost]
         public async Task<IActionResult> CreateSubscription([FromBody] SubscriptionReqDTOcs dto)
         {
@@ -21,13 +26,19 @@ namespace InvoiceSystem.Controllers
             {
                 CustomerId = dto.CustomerId,
                 PlanId = dto.PlanId
-                // The rest will be set by the service
+                // StartDate and IsActive will be set by the service
             };
+
+            // Trigger validation
+            await _validator.ValidateAndThrowAsync(subscriptionDto);
+
             var result = await _subscriptionService.CreateSubscriptionAsync(subscriptionDto);
             if (!result)
                 return BadRequest("Subscription could not be created.");
+
             return Ok("Subscription created successfully.");
         }
+
         [HttpGet("customer/{customerId}")]
         public async Task<IActionResult> GetSubscriptionsByCustomer(int customerId)
         {
@@ -36,26 +47,3 @@ namespace InvoiceSystem.Controllers
         }
     }
 }
-//{
-//    private readonly ISubscriptionService _service;
-
-//    public SubscriptionsController(ISubscriptionService service)
-//    {
-//        _service = service;
-//    }
-
-//    [HttpPost]
-//    public async Task<IActionResult> Create([FromBody] SubscriptionDTO dto)
-//    {
-//        var result = await _service.CreateSubscriptionAsync(dto);
-//        return result ? Ok("Subscription created") : BadRequest("Already active or plan is full");
-//    }
-
-//    [HttpGet("/api/customers/{id}/subscriptions")]
-//    public async Task<IActionResult> GetByCustomer(int id)
-//    {
-//        var result = await _service.GetSubscriptionsByCustomerAsync(id);
-//        return Ok(result);
-//    }
-//}
-

@@ -65,6 +65,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
+app.UseStatusCodePages(); //to enable default text-only handlers for common error status codes,
 
 //log automatically every HTTP request  
 app.UseSerilogRequestLogging();
@@ -75,6 +76,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+//if (!app.Environment.IsDevelopment())
+//{
+//    app.UseExceptionHandler("/Error");
+//    app.UseHsts();
+//}
 
 app.UseHttpsRedirection();
 
