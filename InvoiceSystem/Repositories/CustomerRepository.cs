@@ -10,7 +10,17 @@ namespace InvoiceSystem.Repositories
         private readonly AppDbContexts _context;
         public CustomerRepository(AppDbContexts context) => _context = context;
 
-        public async Task AddAsync(Customer customer) => await _context.Customers.AddAsync(customer);
+        public async Task AddAsync(Customer customer)
+        {
+
+            try { await _context.Customers.AddAsync(customer); }
+            catch (Exception ex)
+            { 
+                throw new Exception("Error adding customer", ex);
+            }
+
+
+        }
 
         public async Task<Customer?> GetByIdAsync(int id) => await _context.Customers.FindAsync(id);
 
