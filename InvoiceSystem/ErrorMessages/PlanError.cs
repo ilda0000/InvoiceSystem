@@ -1,6 +1,6 @@
 ﻿namespace InvoiceSystem.ErrorMessages
 {
-    public static class PlanError
+    public class PlanError
     {
         public const string PlanDuplicateName = "A plan with this name already exists.";
         public const string PlanNotFound = "Plan does not exist.";

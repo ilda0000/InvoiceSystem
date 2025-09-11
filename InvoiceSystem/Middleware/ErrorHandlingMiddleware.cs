@@ -1,8 +1,10 @@
 ﻿using System.Net;
 using System.Text.Json;
 using FluentValidation;
+using InvoiceSystem.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
+// Error handling middleware for catching and formatting exceptions in the HTTP pipeline
 public class ErrorHandlingMiddleware
 {
     // Reference to the next middleware in the pipeline
@@ -33,23 +35,15 @@ public class ErrorHandlingMiddleware
             _logger.LogWarning(ex, "Validation failed");
 
             // Extract all error messages from the validation exception
-            var errors = ex.Errors.Select(e => e.ErrorMessage).ToList();
-
-            // Create a ProblemDetails object describing the error
-            var problem = new ProblemDetails
-            {
-                Status = StatusCodes.Status400BadRequest, // HTTP 400 for validation errors
-                Title = "Validation error",               // Error title
-                Detail = "One or more validation errors occurred." // General detail message
-            };
+            var errors = ex.Errors.Select(e => new { field = e.PropertyName, message = e.ErrorMessage }).ToList();
 
             // Create a response object including detailed errors
             var response = new
             {
-                problem.Status,
-                problem.Title,
-                problem.Detail,
-                Errors = errors
+                type = "ValidationError",
+                status = StatusCodes.Status400BadRequest,
+                message = "One or more validation errors occurred.",
+                errors = errors
             };
 
             // Set the response HTTP status code
@@ -61,35 +55,57 @@ public class ErrorHandlingMiddleware
             // Write the JSON response to the HTTP response body
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
-        // Catch all other unhandled exceptions
+        //// Catch business exceptions
+        catch (BusinessExceptions ex)
+        {
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new
+            {
+                type = "BusinessError",
+                status = StatusCodes.Status409Conflict,
+                message = ex.Message
+            }));
+        }
+       // Catch not found exceptions
+        catch (NotFoundExceptions ex)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new
+            {
+                type = "NotFoundError",
+                status = StatusCodes.Status404NotFound,
+                message = ex.Message
+            }));
+        }
+        //// Catch database exceptions
+        catch (DatabaseException ex)
+        {
+            // Log the database error
+            _logger.LogError(ex, "Database error");
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new
+            {
+                type = "DatabaseError",
+                status = StatusCodes.Status500InternalServerError,
+                message = "A database error occurred. Please contact support."
+            }));
+        }
+        //// Catch all other unhandled exceptions
         catch (Exception ex)
         {
             // Log the unexpected error as an error
-            _logger.LogError(ex, "Unexpected error");
-
-            // Return a generic 500 Internal Server Error response
-            await WriteProblem(context, StatusCodes.Status500InternalServerError, "Server error", "An unexpected error occurred.");
+            _logger.LogError(ex, "Unhandled server error");
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new
+            {
+                type = "ServerError",
+                status = StatusCodes.Status500InternalServerError,
+                message = "An unexpected error occurred. Please try again later."
+            }));
         }
-    }
-
-    // Helper method to write ProblemDetails responses
-    private static async Task WriteProblem(HttpContext ctx, int status, string title, string detail)
-    {
-        // Create a ProblemDetails object
-        var problem = new ProblemDetails
-        {
-            Status = status,
-            Title = title,
-            Detail = detail
-        };
-
-        // Set the response HTTP status code
-        ctx.Response.StatusCode = status;
-
-        // Set the response content type to JSON
-        ctx.Response.ContentType = "application/json";
-
-        // Write the JSON response to the HTTP response body
-        await ctx.Response.WriteAsync(JsonSerializer.Serialize(problem));
     }
 }

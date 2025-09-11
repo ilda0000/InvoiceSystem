@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using InvoiceSystem.ErrorMessages;
 
+
 namespace InvoiceSystem.Controllers
 {
     [ApiController]
@@ -42,8 +43,10 @@ namespace InvoiceSystem.Controllers
                 {
                     status = 409,
                     error = "Conflict",
-                    message = PlanError.PlanDuplicateName
+                   message = PlanError.PlanDuplicateName
+
                 });
+
             }
 
             return CreatedAtAction(nameof(GetById), new { id = planDto.Id }, planDto);

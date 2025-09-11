@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using InvoiceSystem.ErrorMessages;
 using InvoiceSystem.Models.DTO;
 
 namespace InvoiceSystem.Models.Validators
@@ -8,14 +9,12 @@ namespace InvoiceSystem.Models.Validators
         public CustomerValidator()
         {
             RuleFor(x => x.Name)
-                .NotEmpty().WithMessage("Name is required.")
-                .MaximumLength(100).WithMessage("Name cannot exceed 100 characters.");
+                  .NotEmpty().WithMessage(AllErrors.CustomerNameRequired);
 
             RuleFor(x => x.Email)
-                .Cascade(CascadeMode.Stop) //  Stop after first failed rule
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Invalid email format.")
-                .MaximumLength(150).WithMessage("Email cannot exceed 150 characters.");
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage(AllErrors.CustomerEmailRequired)
+                .EmailAddress().WithMessage(AllErrors.CustomerEmailInvalid);
         }
     }
 }
