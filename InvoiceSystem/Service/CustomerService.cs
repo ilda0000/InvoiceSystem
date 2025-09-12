@@ -47,7 +47,7 @@ namespace InvoiceSystem.Service
         {
             var customer = await _repository.GetByIdAsync(id);
             if (customer == null)
-                throw new NotFoundExceptions(AllErrors.CustomernotFound);
+                throw new NotFoundExceptions(AllErrors.CustomerNotFound);
 
             return _mapper.Map<CustomerDTO>(customer);
         }

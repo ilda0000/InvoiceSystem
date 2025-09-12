@@ -8,8 +8,8 @@ namespace InvoiceSystem.Repositories
 
         Task<List<Plan>> GetAllAsync();
         Task<Plan?> GetByIdAsync(int id);
-        //Task<Plan?> FindAsync(Func<Plan, bool> predicate);
-        //Task AddAsync(Plan entity); 
+        Task<Plan?> GetByNameAsync(string name);
+        Task AddAsync(Plan entity);
 
     }
 }

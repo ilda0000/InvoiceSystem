@@ -43,7 +43,7 @@ namespace InvoiceSystem.Controllers
                 {
                     status = 409,
                     error = "Conflict",
-                   message = PlanError.PlanDuplicateName
+                   message = AllErrors.PlanDuplicateName
 
                 });
 
@@ -63,7 +63,7 @@ namespace InvoiceSystem.Controllers
                 {
                     status = 404,
                     error = "NotFound",
-                    message = PlanError.PlanNotFound
+                    message = AllErrors.PlanNotFound
                 });
             }
             return Ok(plan);
