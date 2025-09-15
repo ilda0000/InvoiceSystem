@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using InvoiceSystem.ErrorMessages;
 using InvoiceSystem.Models.DTO;
 using InvoiceSystem.Models.Entity;
 using InvoiceSystem.Repositories.IRepositories;
@@ -21,9 +22,16 @@ namespace InvoiceSystem.Service
 
         public async Task<PaymentDTO?> AutoRegisterPaymentAsync()
         {
-            int customerId = 4; // checked for id manually or payments
-
+            int customerId = 4;
             _logger.LogInformation("Starting auto-payment registration for CustomerId {CustomerId}", customerId);
+
+            // Validate customer exists
+            var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
+            if (customer == null)
+            {
+                _logger.LogWarning(AllErrors.CustomerNotFound);
+                return null;
+            }
 
             var subscriptions = await _unitOfWork.Subscriptions.GetByCustomerIdAsync(customerId);
             var activeSub = subscriptions.FirstOrDefault(s => s.IsActive);
@@ -31,7 +39,7 @@ namespace InvoiceSystem.Service
             if (activeSub == null)
             {
                 _logger.LogWarning("No active subscription found for CustomerId {CustomerId}", customerId);
-                return null;
+                return null;    
             }
 
             var unpaidInvoice = (await _unitOfWork.Invoices.GetByCustomerIdAsync(customerId))
@@ -39,7 +47,7 @@ namespace InvoiceSystem.Service
 
             if (unpaidInvoice == null)
             {
-                _logger.LogWarning("No unpaid invoice found for active subscription {SubscriptionId}", activeSub.Id);
+                _logger.LogWarning(AllErrors.PaymentInvoiceNotFound);
                 return null;
             }
 
@@ -48,7 +56,21 @@ namespace InvoiceSystem.Service
 
             if (method == null)
             {
-                _logger.LogWarning("No active payment method found");
+                _logger.LogWarning(AllErrors.PaymentMethodInactive);
+                return null;
+            }
+
+            // Validate payment amount matches invoice
+            if (unpaidInvoice.TotalAmount <= 0)
+            {
+                _logger.LogWarning(AllErrors.PaymentAmountInvalid);
+                return null;
+            }
+
+            // Check if invoice is already paid
+            if (unpaidInvoice.Paid)
+            {
+                _logger.LogWarning(AllErrors.PaymentInvoiceAlreadyPaid);
                 return null;
             }
 
@@ -61,7 +83,6 @@ namespace InvoiceSystem.Service
             };
 
             await _unitOfWork.Payments.AddAsync(payment);
-
             unpaidInvoice.Paid = true;
             await _unitOfWork.SaveAsync();
 

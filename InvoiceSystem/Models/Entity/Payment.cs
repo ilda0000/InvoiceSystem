@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InvoiceSystem.Models.Entity
 {
-    public class Payment: BaseEntity
+    public class Payment : BaseEntity
     {
-        
+
         public int InvoiceId { get; set; }
         public Invoice Invoice { get; set; }
 
@@ -17,7 +17,7 @@ namespace InvoiceSystem.Models.Entity
 
         public PaymentMethod PaymentMethod { get; set; } = null!;
 
-        
+
 
     }
 

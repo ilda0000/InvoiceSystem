@@ -1,7 +1,7 @@
 ﻿using InvoiceSystem.Models.Entity;
 using System.ComponentModel.DataAnnotations;
 
-namespace InvoiceSystem.Models.Entity   
+namespace InvoiceSystem.Models.Entity
 {
     public class Plan : BaseEntity
     {

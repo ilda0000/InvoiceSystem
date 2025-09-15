@@ -2,7 +2,7 @@
 
 namespace InvoiceSystem.Models.Entity
 {
-    public class Subscriptions : BaseEntity
+    public class Subscription : BaseEntity
     {
         public int CustomerId { get; set; }
         public Customer Customer { get; set; }

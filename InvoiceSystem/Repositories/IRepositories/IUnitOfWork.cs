@@ -1,6 +1,10 @@
-﻿using InvoiceSystem.Repositories.IRepositories;
+﻿using AutoMapper;
+using InvoiceSystem.ErrorMessages;
+using InvoiceSystem.Exceptions;
+using InvoiceSystem.Models.DTO;
+using InvoiceSystem.Repositories.IRepositories;
         
-namespace InvoiceSystem.Repositories.IRepositories  
+namespace InvoiceSystem.Repositories.IRepositories
 {
     public interface IUnitOfWork
     {

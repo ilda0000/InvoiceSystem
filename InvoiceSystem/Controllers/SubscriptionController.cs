@@ -26,15 +26,13 @@ namespace InvoiceSystem.Controllers
             {
                 CustomerId = dto.CustomerId,
                 PlanId = dto.PlanId
-                // StartDate and IsActive will be set by the service
+                // StartDate and IsActive will be set in the service
             };
 
             // Trigger validation
             await _validator.ValidateAndThrowAsync(subscriptionDto);
 
-            var result = await _subscriptionService.CreateSubscriptionAsync(subscriptionDto);
-            if (!result)
-                return BadRequest("Subscription could not be created.");
+            await _subscriptionService.CreateSubscriptionAsync(subscriptionDto);
 
             return Ok("Subscription created successfully.");
         }

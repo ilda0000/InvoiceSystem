@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using InvoiceSystem.Service;
 using InvoiceSystem.Models.DTO;
+using InvoiceSystem.ErrorMessages;
 
 namespace InvoiceSystem.Controllers
 {
@@ -27,7 +28,7 @@ namespace InvoiceSystem.Controllers
             if (result == null)
             {
                 _logger.LogWarning("No unpaid invoices found or no active payment method.");
-                return NotFound("No unpaid invoice or active subscription found.");
+                return NotFound(AllErrors.PaymentInvoiceNotFound);
             }
 
             _logger.LogInformation("Payment registered successfully for InvoiceId: {InvoiceId}", result.InvoiceId);

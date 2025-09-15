@@ -1,6 +1,5 @@
 using FluentValidation;
 using InvoiceSystem.Models.DTO;
-using InvoiceSystem.Models.Entity;
 
 namespace InvoiceSystem.Models.Validators
 {
@@ -9,16 +8,16 @@ namespace InvoiceSystem.Models.Validators
         public SubscriptionValidator()
         {
             RuleFor(x => x.CustomerId)
-                .GreaterThan(0);
+                .GreaterThan(0).WithMessage("Customer ID must be greater than 0.");
 
             RuleFor(x => x.PlanId)
-                .GreaterThan(0);
+                .GreaterThan(0).WithMessage("Plan ID must be greater than 0.");
 
             RuleFor(x => x.StartDate)
-                .NotNull();
+                .NotNull().WithMessage("Start date is required.");
 
             RuleFor(x => x.IsActive)
-                .NotNull();
+                .NotNull().WithMessage("IsActive must have a value.");
         }
     }
 }

@@ -1,9 +1,8 @@
-﻿using InvoiceSystem.Service;
+﻿using FluentValidation;
+using InvoiceSystem.Exceptions;
 using InvoiceSystem.Models.DTO;
-using FluentValidation;
+using InvoiceSystem.Service;
 using Microsoft.AspNetCore.Mvc;
-using InvoiceSystem.ErrorMessages;
-
 
 namespace InvoiceSystem.Controllers
 {
@@ -23,31 +22,10 @@ namespace InvoiceSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] PlanDTO planDto)
         {
-            
+            // Validation handled via FluentValidation middleware
             var validationResult = await _planValidator.ValidateAsync(planDto);
             if (!validationResult.IsValid)
-            {
-                return BadRequest(new
-                {
-                    status = 400,
-                    error = "BadRequest",
-                    messages = validationResult.Errors.Select(e => e.ErrorMessage)
-                });
-            }
-
-            // Check for duplicate plan name
-            PlanDTO existingPlan = await _service.GetByNameAsync(planDto.Name);
-            if (existingPlan != null)
-            {
-                return Conflict(new
-                {
-                    status = 409,
-                    error = "Conflict",
-                   message = AllErrors.PlanDuplicateName
-
-                });
-
-            }
+                throw new ValidationException(validationResult.Errors);
 
             return CreatedAtAction(nameof(GetById), new { id = planDto.Id }, planDto);
         }
@@ -57,15 +35,10 @@ namespace InvoiceSystem.Controllers
         {
             var plans = await _service.GetAllPlansAsync();
             var plan = plans.FirstOrDefault(p => p.Id == id);
+
             if (plan == null)
-            {
-                return NotFound(new
-                {
-                    status = 404,
-                    error = "NotFound",
-                    message = AllErrors.PlanNotFound
-                });
-            }
+                throw new NotFoundExceptions($"Plan with id {id} not found.");
+
             return Ok(plan);
         }
 
