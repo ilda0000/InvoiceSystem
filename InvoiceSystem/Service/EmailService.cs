@@ -2,7 +2,7 @@
 using System.Net;
 using InvoiceSystem.Models.Entity;
 using InvoiceSystem.Service;
-
+using InvoiceSystem.Resources; 
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _config;
@@ -14,31 +14,39 @@ public class EmailService : IEmailService
 
     public async Task SendInvoiceEmailAsync(string toEmail, Invoice invoice)
     {
+        // Configure SMTP client
         var smtpClient = new SmtpClient(_config["EmailSettings:SmtpHost"])
         {
             Port = int.Parse(_config["EmailSettings:Port"]),
             Credentials = new NetworkCredential(
-        _config["EmailSettings:SmtpUser"],
-        _config["EmailSettings:SmtpPass"]),
+                _config["EmailSettings:SmtpUser"],
+                _config["EmailSettings:SmtpPass"]),
             EnableSsl = true,
         };
 
-        string subject = $"Fatura #{invoice.Id} – {invoice.BillingDate:dd/MM/yyyy}";
-        string body = $@"
-        Pershendetje,
+        string subjectTemplate = MailResources.InvoiceMailSubject;
+        string bodyTemplate = MailResources.InvoiceMailBody;
+        string sender = MailResources.InvoiceMailSender;
 
-         Ju sapo keni marre nje fature te re per abonimin tuaj:
+        // Replace placeholders dynamically
+        string subject = subjectTemplate
+            .Replace("{InvoiceId}", invoice.Id.ToString())
+            .Replace("{InvoiceDate}", invoice.BillingDate.ToString("dd/MM/yyyy"));
 
-        • Numri i Fatures: {invoice.Id}
-        • Data e Fatures: {invoice.BillingDate:dd/MM/yyyy}
-        • Shuma Totale: {invoice.TotalAmount:N2} LEKË
-        • Zbritje: {invoice.Discount?.Name ?? "N/A"}
-        • Afati i Pagesës: {invoice.BillingDate.AddDays(10):dd/MM/yyyy}
+        string body = bodyTemplate
+            .Replace("{InvoiceId}", invoice.Id.ToString())
+            .Replace("{InvoiceDate}", invoice.BillingDate.ToString("dd/MM/yyyy"))
+            .Replace("{InvoiceAmount}", invoice.TotalAmount.ToString("N2"))
+            .Replace("{InvoiceDiscount}", invoice.Discount?.Name ?? "N/A")
+            .Replace("{InvoiceDueDate}", invoice.BillingDate.AddDays(10).ToString("dd/MM/yyyy"));
 
-        Faleminderit,
-        Sistemi i Faturimit";
+        // Create the email message
+        var mail = new MailMessage(sender, toEmail, subject, body)
+        {
+            IsBodyHtml = true // HTML template
+        };
 
-        var mail = new MailMessage("no-reply@invoice.com", toEmail, subject, body);
+        // Send the email
         await smtpClient.SendMailAsync(mail);
     }
 }

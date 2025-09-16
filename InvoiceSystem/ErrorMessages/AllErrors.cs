@@ -11,7 +11,7 @@
         // Plan Errors
         public const string PlanNotFound = "Plan does not exist.";
         public const string MaxUsersExceeded = "Max users must be greater than 0.";
-        public const string InternalServerError = "An error occurred while processing the request.";
+            public const string InternalServerError = "An error occurred while processing the request.";
 
         // Subscription Errors 
         public const string SubscriptionNotFound = "Subscription does not exist.";
@@ -36,5 +36,9 @@
         public const string InvoiceDueDatePassed = "Invoice due date has already passed.";
         public const string InvoiceCreationFailed = "Invoice could not be created.";
 
+        // Email Errors
+        public const string EmailClientNotFound = "Email client does not exist.";
+        public const string EmailSendFailed = "Failed to send email to the customer.";
+      
     }
 }
