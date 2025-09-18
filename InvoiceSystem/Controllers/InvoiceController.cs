@@ -24,20 +24,14 @@ namespace InvoiceSystem.Controllers
         [HttpPost("generate")]
         public async Task<IActionResult> GenerateMinimalInvoice()
         {
-            try
-            {
+            
                 var invoice = await _invoiceService.GenerateMonthlyInvoicesMinimalAsync();
                 if (invoice == null)
                 {
                     return NotFound("No active subscriptions found for invoice generation.");
                 }
                 return Ok(invoice);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating monthly invoices");
-                return StatusCode(500, "An error occurred while generating invoices.");
-            }
+            
         }
 
         [HttpGet("customer/{customerId}")]

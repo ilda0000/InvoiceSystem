@@ -30,7 +30,7 @@
 
 
         public const string InvoiceNotFound = "Invoice does not exist.";
-        public const string InvoiceAlreadyPaid = "Invoice is already paid.";
+        //public const string InvoiceAlreadyPaid = "Invoice is already paid.";
         public const string InvoiceAmountInvalid = "Invoice amount must be greater than zero.";
         public const string InvoiceCustomerMismatch = "Invoice does not belong to the specified customer.";
         public const string InvoiceDueDatePassed = "Invoice due date has already passed.";

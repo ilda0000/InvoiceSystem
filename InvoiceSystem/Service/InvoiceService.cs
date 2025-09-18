@@ -41,6 +41,7 @@ namespace InvoiceSystem.Service
         {
             try
             {
+                
                 var activeSubs = await _unitOfWork.Subscriptions.GetAllActiveAsync();
                 var billingDate = DateTime.UtcNow;
 
@@ -54,8 +55,8 @@ namespace InvoiceSystem.Service
                     if (plan == null)
                         throw new NotFoundExceptions(AllErrors.PlanNotFound);
 
-                    if (await _unitOfWork.Invoices.InvoiceExistsAsync(sub.Id, billingDate))
-                        throw new BusinessExceptions(AllErrors.InvoiceAlreadyPaid);
+                    //if (await _unitOfWork.Invoices.InvoiceExistsAsync(sub.Id, billingDate))
+                    //    throw new BusinessExceptions(AllErrors.InvoiceAlreadyPaid);
 
                     // Total months the customer has been subscribed
                     var pastSubs = await _unitOfWork.Subscriptions.GetAllByCustomerAsync(sub.CustomerId);
