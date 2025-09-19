@@ -20,9 +20,6 @@ namespace InvoiceSystem.Models.Validators
                 .GreaterThan(0)
                 .WithMessage(AllErrors.InvoiceAmountInvalid);
 
-            //RuleFor(x => x.BillingDate)
-            //    .LessThanOrEqualTo(DateTime.UtcNow)
-            //    .WithMessage("Billing date cannot be in the future.");
 
             RuleFor(x => x.DiscountApplied)
                 .GreaterThanOrEqualTo(0)
