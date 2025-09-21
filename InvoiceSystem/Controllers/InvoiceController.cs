@@ -36,7 +36,7 @@ namespace InvoiceSystem.Controllers
 
         [HttpGet("customer/{customerId}")]
         public async Task<ActionResult<List<InvoiceDTO>>> GetCustomerInvoices(int customerId)
-        {
+        {// TODO :  is used try - catch block?? remove
             try
             {
                 var invoices = await _invoiceService.GetInvoicesByCustomerAsync(customerId);
