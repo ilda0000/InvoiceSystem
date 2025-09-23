@@ -4,6 +4,7 @@ using InvoiceSystem.Exceptions;
 using InvoiceSystem.Models.DTO;
 using InvoiceSystem.Models.Entity;
 using InvoiceSystem.Repositories.IRepositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace InvoiceSystem.Service
@@ -61,7 +62,9 @@ namespace InvoiceSystem.Service
         {
             try
             {
-                var subs = await _unitOfWork.Subscriptions.GetAllByCustomerAsync(customerId);
+                var subs = await _unitOfWork.Subscriptions.GetAllByCustomers(customerId) 
+                          .ToListAsync();
+
                 if (!subs.Any())
                     throw new NotFoundExceptions(AllErrors.SubscriptionNotFound);
 

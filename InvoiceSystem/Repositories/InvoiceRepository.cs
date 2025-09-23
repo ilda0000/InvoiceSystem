@@ -17,11 +17,10 @@ namespace InvoiceSystem.Repositories
         {
             return await _context.Invoices.AnyAsync(i =>
                 i.SubscriptionId == subscriptionId &&
-                i.BillingDate.Year == billingDate.Year &&
+                i.BillingDate.Year == billingDate.Year &&  
                 i.BillingDate.Month == billingDate.Month);
         }
 
-        //Helper method to get invoices by customer ID 
         public async Task<List<Invoice>> GetByCustomerIdAsync(int customerId)
         {
             return await _context.Invoices

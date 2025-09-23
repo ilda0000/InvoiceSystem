@@ -17,7 +17,6 @@ namespace InvoiceSystem.Controllers
         {
             _invoiceService = invoiceService;
             _logger = logger;
-            _logger = logger;
         }
 
         // POST /api/invoices/generate
@@ -35,22 +34,14 @@ namespace InvoiceSystem.Controllers
         }
 
         [HttpGet("customer/{customerId}")]
-        public async Task<ActionResult<List<InvoiceDTO>>> GetCustomerInvoices(int customerId)
+        public async Task<IActionResult> GetCustomerInvoices(int customerId)
         {// TODO :  is used try - catch block?? remove
-            try
+            var invoices = await _invoiceService.GetInvoicesByCustomerAsync(customerId);
+            if (!invoices.Any())
             {
-                var invoices = await _invoiceService.GetInvoicesByCustomerAsync(customerId);
-                if (!invoices.Any())
-                {
-                    return NotFound($"No invoices found for customer {customerId}");
-                }
-                return Ok(invoices);
+                return NotFound($"No invoices found for customer {customerId}");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving invoices for customer {CustomerId}", customerId);
-                return StatusCode(500, "An error occurred while retrieving invoices.");
-            }
+            return Ok(invoices);
         }
     }
 }

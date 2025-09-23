@@ -1,16 +1,11 @@
 ﻿using AutoMapper;
-using FluentValidation;
 using InvoiceSystem.ErrorMessages;
 using InvoiceSystem.Exceptions;
 using InvoiceSystem.Models.DTO;
 using InvoiceSystem.Models.Entity;
 using InvoiceSystem.Repositories.IRepositories;
-using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace InvoiceSystem.Service
 {
@@ -20,55 +15,58 @@ namespace InvoiceSystem.Service
         private readonly IMapper _mapper;
         private readonly ILogger<InvoiceService> _logger;
         private readonly IEmailService _emailService;
-        private readonly IValidator<InvoiceDTO> _invoiceValidator;
 
         public InvoiceService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<InvoiceService> logger,
-            IEmailService emailService,
-            IValidator<InvoiceDTO> invoiceValidator
-        )
+            IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _emailService = emailService;
-            _invoiceValidator = invoiceValidator;
         }
 
         public async Task<InvoiceDTO?> GenerateMonthlyInvoicesMinimalAsync()
         {
             try
             {
-                
-                var activeSubs = await _unitOfWork.Subscriptions.GetAllActiveAsync();
                 var billingDate = DateTime.UtcNow;
+
+              
+                var activeSubs = await _unitOfWork.Subscriptions
+                    .GetAllActive()
+                    .Include(s => s.Plan)
+                    .Include(s => s.Customer)
+                    .ToListAsync();
+
+                if (activeSubs == null || activeSubs.Count == 0)
+                {
+                    _logger.LogInformation("No active subscriptions found for billing date: {BillingDate}", billingDate);
+                    return null;
+                }
+
+                var allDiscounts = await _unitOfWork.Discounts.GetAllAsync();
 
                 foreach (var sub in activeSubs)
                 {
-                    var customer = await _unitOfWork.Customers.GetByIdAsync(sub.CustomerId);
-                    if (customer == null)
-                        throw new NotFoundExceptions(AllErrors.CustomerNotFound);
+                    var pastSubs = await _unitOfWork.Subscriptions
+                    .GetAllByCustomers(sub.CustomerId)
+                     .ToListAsync(); 
 
-                    var plan = await _unitOfWork.Plans.GetByIdAsync(sub.PlanId);
-                    if (plan == null)
-                        throw new NotFoundExceptions(AllErrors.PlanNotFound);
-
-                    //if (await _unitOfWork.Invoices.InvoiceExistsAsync(sub.Id, billingDate))
-                    //    throw new BusinessExceptions(AllErrors.InvoiceAlreadyPaid);
-
-                    // Total months the customer has been subscribed
-                    var pastSubs = await _unitOfWork.Subscriptions.GetAllByCustomerAsync(sub.CustomerId);
                     int totalMonths = pastSubs.Sum(s =>
-                        s.EndDate.HasValue ? (s.EndDate.Value - s.StartDate).Days / 30 : 0);
+                        s.EndDate.HasValue
+                            ? (s.EndDate.Value - s.StartDate).Days / 30
+                            : 0);
+
+                    var plan = sub.Plan;
 
                     decimal basePrice = plan.PricePerMonth;
-                    decimal totalDiscount = 0;
+                    decimal totalDiscount = 0m;
                     int? discountId = null;
 
                     // Loyalty discount
-                    var allDiscounts = await _unitOfWork.Discounts.GetAllAsync();
                     var loyalty = allDiscounts
                         .Where(d => d.MinMonthsRequired > 0 && totalMonths >= d.MinMonthsRequired)
                         .OrderByDescending(d => d.MinMonthsRequired)
@@ -77,39 +75,24 @@ namespace InvoiceSystem.Service
                     if (loyalty != null)
                     {
                         totalDiscount += loyalty.Type == "Percentage"
-                            ? basePrice * loyalty.Value / 100
+                            ? basePrice * loyalty.Value / 100m
                             : loyalty.Value;
 
                         discountId = loyalty.Id;
                     }
 
-                    // Payment method discount – hardcoded to "Credit Card"
-                    var paymentMethodDiscount = allDiscounts.FirstOrDefault(d => d.MinMonthsRequired == 0 && d.Name == "Credit Card");
+                    // Payment method discount
+                    var paymentMethodDiscount = allDiscounts
+                        .FirstOrDefault(d => d.MinMonthsRequired == 0 && d.Name == "Credit Card");
 
                     if (paymentMethodDiscount != null)
                     {
                         totalDiscount += paymentMethodDiscount.Type == "Percentage"
-                            ? basePrice * paymentMethodDiscount.Value / 100
+                            ? basePrice * paymentMethodDiscount.Value / 100m
                             : paymentMethodDiscount.Value;
                     }
 
                     decimal total = basePrice - totalDiscount;
-
-                    var invoiceDto = new InvoiceDTO
-                    {
-                        CustomerId = sub.CustomerId,
-                        SubscriptionId = sub.Id,
-                        BillingDate = billingDate,
-                        TotalAmount = total,
-                        DiscountApplied = totalDiscount,
-                        Paid = false,
-                        Status = "created"
-                    };
-
-                    // Validate invoice DTO
-                    var validationResult = await _invoiceValidator.ValidateAsync(invoiceDto);
-                    if (!validationResult.IsValid)
-                        throw new ValidationException(validationResult.Errors);
 
                     var invoice = new Invoice
                     {
@@ -130,9 +113,19 @@ namespace InvoiceSystem.Service
                         throw new DatabaseException(AllErrors.InvoiceCreationFailed, ex);
                     }
 
-                    _logger.LogInformation("Invoice created: InvoiceId: {InvoiceId} for CustomerId: {CustomerId}", invoice.Id, sub.CustomerId);
+                    _logger.LogInformation("Invoice created: InvoiceId: {InvoiceId} for CustomerId: {CustomerId}",
+                        invoice.Id, sub.CustomerId);
 
-                    await _emailService.SendInvoiceEmailAsync(customer.Email, invoice);
+                    try
+                    {
+                        await _emailService.SendInvoiceEmailAsync(sub.Customer.Email, invoice);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex,
+                            "Failed sending invoice email. InvoiceId={InvoiceId} CustomerId={CustomerId}",
+                            invoice.Id, sub.CustomerId);
+                    }
 
                     return new InvoiceDTO
                     {
@@ -147,9 +140,9 @@ namespace InvoiceSystem.Service
                     };
                 }
 
-                _logger.LogInformation("No active subscriptions found for billing date: {BillingDate}", billingDate);
+                _logger.LogInformation("No invoices generated for billing date: {BillingDate}", billingDate);
                 return null;
-                }
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating monthly invoices.");
@@ -165,23 +158,25 @@ namespace InvoiceSystem.Service
 
         public async Task<decimal> CalculateDiscountedAmountAsync(int customerId, Plan plan)
         {
-            var subs = await _unitOfWork.Subscriptions.GetByCustomerIdAsync(customerId);
-            int totalMonths = subs.Sum(s => s.EndDate.HasValue ? (s.EndDate.Value - s.StartDate).Days / 30 : 0);
+            int totalMonths = await _unitOfWork.Subscriptions
+                .GetAllByCustomers(customerId)
+                .SumAsync(s => s.EndDate.HasValue
+                    ? (s.EndDate.Value - s.StartDate).Days / 30
+                    : 0);
 
             var discount = await _unitOfWork.Discounts.GetBestApplicableDiscountAsync(totalMonths);
 
-            decimal baseAmount = plan.PricePerMonth;
-            decimal discountValue = 0;
+            var baseAmount = plan.PricePerMonth;
+            var discountValue = 0m;
 
             if (discount != null)
             {
                 discountValue = discount.Type == "Percentage"
-                    ? baseAmount * discount.Value / 100
+                    ? baseAmount * discount.Value / 100m
                     : discount.Value;
             }
 
-            decimal totalAmount = baseAmount - discountValue;
-            return totalAmount;
+            return baseAmount - discountValue;
         }
     }
 }

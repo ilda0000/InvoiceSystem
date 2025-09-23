@@ -3,6 +3,7 @@ using InvoiceSystem.ErrorMessages;
 using InvoiceSystem.Models.DTO;
 using InvoiceSystem.Models.Entity;
 using InvoiceSystem.Repositories.IRepositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace InvoiceSystem.Service
@@ -33,7 +34,8 @@ namespace InvoiceSystem.Service
                 return null;
             }
 
-            var subscriptions = await _unitOfWork.Subscriptions.GetByCustomerIdAsync(customerId);
+            var subscriptions = await _unitOfWork.Subscriptions.GetAllByCustomers(customerId)
+            .ToListAsync();
             var activeSub = subscriptions.FirstOrDefault(s => s.IsActive);
 
             if (activeSub == null)
