@@ -23,10 +23,9 @@ namespace InvoiceSystem.Service
 
         public async Task<PaymentDTO?> AutoRegisterPaymentAsync()
         {
-            int customerId = 4;
+            int customerId = 4; // Example customer
             _logger.LogInformation("Starting auto-payment registration for CustomerId {CustomerId}", customerId);
 
-            // Validate customer exists
             var customer = await _unitOfWork.Customers.GetByIdAsync(customerId);
             if (customer == null)
             {
@@ -34,18 +33,17 @@ namespace InvoiceSystem.Service
                 return null;
             }
 
-            var subscriptions = await _unitOfWork.Subscriptions.GetAllByCustomers(customerId)
-            .ToListAsync();
+            var subscriptions = await _unitOfWork.Subscriptions.GetAllByCustomers(customerId).ToListAsync();
             var activeSub = subscriptions.FirstOrDefault(s => s.IsActive);
 
             if (activeSub == null)
             {
                 _logger.LogWarning("No active subscription found for CustomerId {CustomerId}", customerId);
-                return null;    
+                return null;
             }
 
             var unpaidInvoice = (await _unitOfWork.Invoices.GetByCustomerIdAsync(customerId))
-                .FirstOrDefault(i => i.SubscriptionId == activeSub.Id && !i.Paid);
+                .FirstOrDefault(i => i.SubscriptionId == activeSub.Id && i.Status == Invoice.InvoiceStatus.NotPaid);
 
             if (unpaidInvoice == null)
             {
@@ -62,17 +60,9 @@ namespace InvoiceSystem.Service
                 return null;
             }
 
-            // Validate payment amount matches invoice
             if (unpaidInvoice.TotalAmount <= 0)
             {
                 _logger.LogWarning(AllErrors.PaymentAmountInvalid);
-                return null;
-            }
-
-            // Check if invoice is already paid
-            if (unpaidInvoice.Paid)
-            {
-                _logger.LogWarning(AllErrors.PaymentInvoiceAlreadyPaid);
                 return null;
             }
 
@@ -85,7 +75,9 @@ namespace InvoiceSystem.Service
             };
 
             await _unitOfWork.Payments.AddAsync(payment);
-            unpaidInvoice.Paid = true;
+
+            unpaidInvoice.Status = Invoice.InvoiceStatus.Paid;
+
             await _unitOfWork.SaveAsync();
 
             _logger.LogInformation("Payment recorded for InvoiceId {InvoiceId} with Amount {Amount}",

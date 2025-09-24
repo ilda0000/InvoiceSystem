@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvoiceMailBody" xml:space="preserve">
-    <value>&lt;![CDATA[&lt;html&gt;&lt;body&gt;&lt;h2&gt;Përshëndetje ,&lt;/h2&gt;&lt;p&gt;Ju sapo keni marrë një faturë të re:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Numri i Faturës: {InvoiceId}&lt;/li&gt;&lt;li&gt;Data e Faturës: {InvoiceDate}&lt;/li&gt;&lt;li&gt;Shuma Totale: {InvoiceAmount} LEKË&lt;/li&gt;&lt;li&gt;Zbritje: {InvoiceDiscount}&lt;/li&gt;&lt;li&gt;Afati i Pagesës: {InvoiceDueDate}&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Faleminderit,&lt;br/&gt;Sistemi i Faturimit&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;]]&gt;</value>
+    <value>&lt;![CDATA[&lt;html&gt;&lt;body&gt;&lt;h2&gt;Përshëndetje ,&lt;/h2&gt;&lt;p&gt;Ju sapo keni marrë një faturë të re:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Numri i Faturës: {InvoiceId}&lt;/li&gt;&lt;li&gt;Data e Faturës: {InvoiceDate}&lt;/li&gt;&lt;li&gt;Shuma Totale: {InvoiceAmount} LEKË&lt;/li&gt;&lt;li&gt;Zbritje: {InvoiceDiscount}&lt;/li&gt;&lt;li&gt;Afati i Pagesës: {InvoiceDueDate}&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Faleminderit,&lt;br/&gt;Sistemi i Faturimit&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;]&gt;</value>
     <comment>Email body template (HTML) with placeholders</comment>
   </data>
   <data name="InvoiceMailSender" xml:space="preserve">

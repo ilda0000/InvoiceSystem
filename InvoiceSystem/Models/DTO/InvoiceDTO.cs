@@ -1,4 +1,7 @@
-﻿namespace InvoiceSystem.Models.DTO
+﻿using InvoiceSystem.Models.Entity;
+using static InvoiceSystem.Models.Entity.Invoice;
+
+namespace InvoiceSystem.Models.DTO
 {
     public class InvoiceDTO
     {
@@ -8,14 +11,11 @@
         public DateTime BillingDate { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal DiscountApplied { get; set; }
-        public bool Paid { get; set; }
-        public string Status { get; set; }
+        // public bool Paid { get; set; }
+        //public string Status { get; set; }
+        public string Status { get; set; } = Invoice.InvoiceStatus.NotPaid.ToString();
         //public decimal DiscountApplied { get; set; }
 
 
-    }
-    public class InvoiceGenerationMinimalResponseDTO
-    {
-        public List<InvoiceDTO> Invoices { get; set; } = new();
     }
 }

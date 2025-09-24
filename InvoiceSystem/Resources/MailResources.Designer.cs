@@ -61,7 +61,7 @@ namespace InvoiceSystem.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;![CDATA[&lt;html&gt;&lt;body&gt;&lt;h2&gt;Përshëndetje {CustomerName},&lt;/h2&gt;&lt;p&gt;Ju sapo keni marrë një faturë të re:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Numri i Faturës: {InvoiceId}&lt;/li&gt;&lt;li&gt;Data e Faturës: {InvoiceDate}&lt;/li&gt;&lt;li&gt;Shuma Totale: {InvoiceAmount} LEKË&lt;/li&gt;&lt;li&gt;Zbritje: {InvoiceDiscount}&lt;/li&gt;&lt;li&gt;Afati i Pagesës: {InvoiceDueDate}&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Faleminderit,&lt;br/&gt;Sistemi i Faturimit&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;]]&gt;.
+        ///   Looks up a localized string similar to &lt;![CDATA[&lt;html&gt;&lt;body&gt;&lt;h2&gt;Përshëndetje ,&lt;/h2&gt;&lt;p&gt;Ju sapo keni marrë një faturë të re:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Numri i Faturës: {InvoiceId}&lt;/li&gt;&lt;li&gt;Data e Faturës: {InvoiceDate}&lt;/li&gt;&lt;li&gt;Shuma Totale: {InvoiceAmount} LEKË&lt;/li&gt;&lt;li&gt;Zbritje: {InvoiceDiscount}&lt;/li&gt;&lt;li&gt;Afati i Pagesës: {InvoiceDueDate}&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Faleminderit,&lt;br/&gt;Sistemi i Faturimit&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;]&gt;.
         /// </summary>
         public static string InvoiceMailBody {
             get {
