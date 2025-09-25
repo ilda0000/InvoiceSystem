@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using InvoiceSystem.ErrorMessages;
 using InvoiceSystem.Exceptions;
 using InvoiceSystem.Models.DTO;
 using InvoiceSystem.Models.Entity;
@@ -24,57 +23,41 @@ namespace InvoiceSystem.Service
 
         public async Task<bool> CreateSubscriptionAsync(SubscriptionDTO dto)
         {
-            try
-            {
-                // Check if customer has active subscription
-                if (await _unitOfWork.Subscriptions.HasActiveSubscriptionAsync(dto.CustomerId, dto.PlanId))
-                    throw new BusinessExceptions(AllErrors.SubscriptionAlreadyActive);
+            // Check if customer has active subscription
+            if (await _unitOfWork.Subscriptions.HasActiveSubscriptionAsync(dto.CustomerId, dto.PlanId))
+                throw new BusinessExceptions("Customer already has an active subscription.");
 
-                // Check if plan exists
-                var plan = await _unitOfWork.Plans.GetByIdAsync(dto.PlanId);
-                if (plan == null)
-                    throw new NotFoundExceptions(AllErrors.PlanNotFound);
+            // Check if plan exists
+            var plan = await _unitOfWork.Plans.GetByIdAsync(dto.PlanId);
+            if (plan == null)
+                throw new NotFoundExceptions("Plan not found.");
 
-                // Check plan capacity
-                var userCount = await _unitOfWork.Subscriptions.CountActiveSubscriptionsForPlanAsync(dto.PlanId);
-                if (userCount >= plan.MaxUsers)
-                    throw new BusinessExceptions(AllErrors.SubscriptionPlanCapacityExceeded);
+            // Check plan capacity
+            var userCount = await _unitOfWork.Subscriptions.CountActiveSubscriptionsForPlanAsync(dto.PlanId);
+            if (userCount >= plan.MaxUsers)
+                throw new BusinessExceptions("Subscription plan capacity exceeded.");
 
-                // Create subscription
-                var subscription = _mapper.Map<Subscription>(dto);
-                subscription.StartDate = DateTime.UtcNow;
-                subscription.EndDate = DateTime.UtcNow.AddMonths(3); // Example duration
-                subscription.IsActive = true;
+            // Create subscription
+            var subscription = _mapper.Map<Subscription>(dto);
+            subscription.StartDate = DateTime.UtcNow;
+            subscription.EndDate = DateTime.UtcNow.AddMonths(3);
+            subscription.IsActive = true;
 
-                await _unitOfWork.Subscriptions.AddAsync(subscription);
-                await _unitOfWork.SaveAsync();
+            await _unitOfWork.Subscriptions.AddAsync(subscription);
+            await _unitOfWork.SaveAsync();
 
-                return true;
-            }
-            catch (Exception ex) when (ex is not BusinessExceptions && ex is not NotFoundExceptions)
-            {
-                _logger.LogError(ex, "Error creating subscription");
-                throw new DatabaseException(AllErrors.InternalServerError, ex);
-            }
+            _logger.LogInformation("Subscription created for CustomerId={CustomerId}", dto.CustomerId);
+            return true;
         }
 
         public async Task<List<SubscriptionDTO>> GetSubscriptionsByCustomerAsync(int customerId)
         {
-            try
-            {
-                var subs = await _unitOfWork.Subscriptions.GetAllByCustomers(customerId) 
-                          .ToListAsync();
+            var subs = await _unitOfWork.Subscriptions.GetAllByCustomers(customerId).ToListAsync();
 
-                if (!subs.Any())
-                    throw new NotFoundExceptions(AllErrors.SubscriptionNotFound);
+            if (!subs.Any())
+                throw new NotFoundExceptions("No subscriptions found for this customer.");
 
-                return _mapper.Map<List<SubscriptionDTO>>(subs);
-            }
-            catch (Exception ex) when (ex is not NotFoundExceptions)
-            {
-                _logger.LogError(ex, "Error fetching subscriptions");
-                throw new DatabaseException(AllErrors.InternalServerError, ex);
-            }
+            return _mapper.Map<List<SubscriptionDTO>>(subs);
         }
     }
 }

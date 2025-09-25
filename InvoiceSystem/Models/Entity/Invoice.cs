@@ -11,7 +11,6 @@ namespace InvoiceSystem.Models.Entity
         public Discount Discount { get; set; } = null!;
         public DateTime BillingDate { get; set; }
         public decimal TotalAmount { get; set; }
-       // public bool Paid { get; set; }
         public enum InvoiceStatus
         {
             NotPaid=0,Paid=1, 

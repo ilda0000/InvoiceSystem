@@ -6,9 +6,8 @@ namespace InvoiceSystem.Service
     {
         Task CreatePlanAsync(PlanDTO planDto);
         Task<List<PlanDTO>> GetAllPlansAsync();
-        Task GetByIdAsync(int id);
+        Task<PlanDTO> GetPlanByIdAsync(int id);
 
-        //Task GetByIdAsync(int id);
         Task<PlanDTO> GetByNameAsync(string name);
     }   
 }

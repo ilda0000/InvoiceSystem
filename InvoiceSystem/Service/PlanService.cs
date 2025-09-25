@@ -21,16 +21,25 @@ namespace InvoiceSystem.Service
 
         public async Task<List<PlanDTO>> GetAllPlansAsync()
         {
-            _logger.LogInformation("Fetching all subscription plans...");
-            var plans = await _unitOfWork.Plans.GetAllAsync();
-
-            if (plans == null || !plans.Any())
+            try
             {
-                _logger.LogWarning("No plans found in the database.");
-            }
+                _logger.LogInformation("Fetching all subscription plans...");
+                var plans = await _unitOfWork.Plans.GetAllAsync();
 
-            return _mapper.Map<List<PlanDTO>>(plans);
+                if (plans == null || !plans.Any())
+                {
+                    _logger.LogWarning("No plans found in the database.");
+                }
+
+                return _mapper.Map<List<PlanDTO>>(plans);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching all plans.");
+                throw new Exception("Failed to fetch plans", ex);
+            }
         }
+
 
         public async Task<PlanDTO> GetPlanByIdAsync(int id)
         {
@@ -44,10 +53,6 @@ namespace InvoiceSystem.Service
             }
 
             return _mapper.Map<PlanDTO>(plan);
-        }
-        public async Task GetByIdAsync(int id)
-        {
-            await GetPlanByIdAsync(id);
         }
 
         public async Task<PlanDTO> GetByNameAsync(string name)
